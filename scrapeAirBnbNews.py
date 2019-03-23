@@ -14,7 +14,8 @@ def getArticles():
 	soup = bsoup(page, 'html.parser')
 	posts = soup.find_all('div', attrs={'class':'g'})
 
-	art =[] #List of objects to populate dataframe
+	 #List of objects to populate dataframe
+	art =[]
 	# if images are needed
 	# for img in images:
 	# 	ii = img.find('img').get('src')

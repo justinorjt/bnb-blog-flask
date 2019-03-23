@@ -1,6 +1,8 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 from flask_restful import Resource, Api, reqparse,abort
 from requests import put, get, post, delete
+from marshmallow import Schema, fields
+from flask_cors import CORS
 from pymongo import MongoClient
 import json
 import scrapeAirBnbNews
@@ -9,6 +11,8 @@ import scrapeAirBnbNews
 
 app = Flask(__name__)
 api = Api(app)
+
+cors = CORS(app, resources={r"*": {"origins": "*"}})
 
 
 @app.route('/')
@@ -21,12 +25,13 @@ def index():
 def catch_all(path):
     return render_template('index.html')
 
-class TodoList(Resource):
+# API RESOURCE BEGINS
+class Articles(Resource):
     def get(self):
         articles = scrapeAirBnbNews.getArticles()
         return articles
 
-api.add_resource(TodoList, '/api/articles')
+api.add_resource(Articles, '/api/articles')
 # api.add_resource(Todo, '/api/todos/<todo_id>')
 
 # if __name__ == '__main__':
