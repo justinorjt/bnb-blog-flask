@@ -17,7 +17,8 @@ articles = {}
 
 app = Flask(__name__)
 api = Api(app)
-cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+# cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:1337"}}) 
 
 parser = reqparse.RequestParser()
 
@@ -43,19 +44,20 @@ class bnbnews(Resource):
 # Post article to blog
 class blogPost(Resource):
 	def post(self):
-		# args = parser.parse_args()
-		header=request.values.get("header")
-		author=request.values.get("author")
-		content=request.values.get("content")
-		category=request.values.get("category")
-		blogposts.insert({ "header":header, "author":author, "content":content, "category":category })
-		return 'request accepted'
+		args = parser.parse_args()
+		header=request.json['header']
+		author=request.json["author"]
+		content=request.json["content"]
+		category=request.json["category"]
+		aPost = { "header":header, "author":author, "content":content, "category":category, "dateCreated":'today'}
+		blogposts.insert_one(aPost)
+		return json.dumps(aPost, default=str)
 
 	def get(self):
 		allposts = blogposts.find()
 		alist =[]
 		[alist.append(doc) for doc in blogposts.find()] 
-		return str(alist)
+		return json.dumps(alist, default = str)
 
 # API ENDPOINTS 
 api.add_resource(bnbnews, '/api/bnbnews')
