@@ -22,10 +22,10 @@ def getArticles():
 
 	# loop to add articles to list
 	for post in posts:
-		tt = (post.find('a').get_text())
-		ll = (post.find('a').get('href'))
-		dd = (post.find('div',{'class':'st'}).get_text())
-		art.append({'title':tt,'link':ll,'desc':dd})
+		title = (post.find('a').get_text())
+		link = (post.find('a').get('href'))
+		description = (post.find('div',{'class':'st'}).get_text())
+		art.append({'title':title,'link':link,'desc':description})
 	
 	#ADD LIST OF ARTICLE INFO OBJECTS TO DATA FRAME
 	articles = pd.DataFrame(art)

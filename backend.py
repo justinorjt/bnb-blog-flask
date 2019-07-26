@@ -4,9 +4,7 @@ from requests import put, get, post, delete
 from flask_cors import CORS
 from pymongo import MongoClient
 import uuid
-
-
-import json, pymongo, dns, scrapeAirBnbNews, resources
+import resources
 
 
 
@@ -34,9 +32,9 @@ def catch_all(path):
 api.add_resource(resources.bnbnews, '/api/bnbnews') #GET
 api.add_resource(resources.login, '/api/login') # POST
 api.add_resource(resources.user, '/api/user', '/api/user/<user_id>') # POST, GET, PUT, DELETE
-api.add_resource(resources.allusers, '/api/allusers') 
-api.add_resource(resources.blogpostlist, '/api/blogpostlist') 
-api.add_resource(resources.blogpost, '/api/blogpost')
+api.add_resource(resources.allusers, '/api/allusers') # GET
+api.add_resource(resources.blogpostlist, '/api/blogpostlist') # GET
+api.add_resource(resources.blogpost, '/api/blogpost/') # POST, GET, PUT, DELETE
 
 # if __name__ == '__main__':
 app.run(debug=True)
