@@ -14,8 +14,10 @@ articles = {}
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 api = Api(app)
-# cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
-cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:1337"}}) 
+# cors = CORS(app, resources=r'/api/*')
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+# cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:1337/webpack-dev-server/"}}) 
 
 @app.route('/')
 def index():
@@ -31,10 +33,12 @@ def catch_all(path):
 # API ENDPOINTS 
 api.add_resource(resources.bnbnews, '/api/bnbnews') #GET
 api.add_resource(resources.login, '/api/login') # POST
+# api.add_resource(resources.user, '/api/user') # POST, GET, PUT, DELETE
 api.add_resource(resources.user, '/api/user', '/api/user/<user_id>') # POST, GET, PUT, DELETE
 api.add_resource(resources.allusers, '/api/allusers') # GET
 api.add_resource(resources.blogpostlist, '/api/blogpostlist') # GET
 api.add_resource(resources.blogpost, '/api/blogpost/') # POST, GET, PUT, DELETE
 
 # if __name__ == '__main__':
+# app.environment = development
 app.run(debug=True)

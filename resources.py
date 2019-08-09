@@ -74,22 +74,34 @@ class user(Resource):
 			abort(400)
 		
 		email = request.json['email']
+		firstname = request.json['firstname']
+		lastname = request.json['lastname']
+		phone = request.json['phone']
+		dateJoined = request.json['dateJoined']
+		role = request.json['role']
 		password = sha256_crypt.encrypt(request.json['password'])
+		user_id=str(uuid.uuid4())
 
 		user = members.find_one({ "email" : email })
 
 		if user:
 			return json.dumps({"message":'User email already exists. Please Login'})
 
-		newUser = UserModel(email=email, password=password, user_id=str(uuid.uuid4()))
-		user = members.insert_one(newUser.__dict__)
+		userObject = {
+		"email":email, "firstname":firstname, "lastname":lastname, "phone":phone,  
+		"dateJoined": dateJoined, "role":role, "password":password, "user_id":user_id
+		}
+		
+		user = members.insert_one(userObject)
 
-		return json.dumps(newUser.__dict__, default=str)
+		return json.dumps(userObject, default=str)
 
 	# Get User By Id
-	@token_required
-	def get(current_user,self, user_id):
+	# @token_required
+	# def get(current_user,self, user_id):
+	def get(self):
 		# Get one user
+		user_id = request.args['user_id']
 		one_member = members.find_one({"user_id": user_id})
 
 		if not one_member:
@@ -98,8 +110,11 @@ class user(Resource):
 		return json.dumps({"user" : one_member}, default = str)
 
 	# Delete a User
-	@token_required
-	def delete(current_user,self, user_id):
+	# @token_required
+	# def delete(current_user,self, user_id):
+	def delete(self):
+		# Get one user
+		user_id = request.args['user_id']
 		one_member = members.find_one({"user_id": user_id})
 
 		if not one_member:
@@ -109,8 +124,11 @@ class user(Resource):
 		return "User deleted"
 
 	# Edit a User
-	@token_required
-	def put(current_user,self, user_id):
+	# @token_required
+	# def put(current_user,self, user_id):
+	def put(self):
+		# Get one user
+		user_id = request.args['user_id']
 		one_member = members.find_one({"user_id": user_id})
 
 		if not one_member:
@@ -125,11 +143,12 @@ class user(Resource):
 
 # Get All Users
 class allusers(Resource):
-	@token_required
-	def get(current_user ,self):
+	# @token_required
+	# def get(current_user ,self):
+	def get(self):
 
-		if current_user['role'] != 'Admin':
-			return json.dumps({"message": "Need Admin to access this route"})
+		# if current_user['role'] != 'Admin':
+		# 	return json.dumps({"message": "Need Admin to access this route"})
 
 		allusers = []
 		[allusers.append(user) for user in members.find()] 
@@ -150,8 +169,15 @@ class blogpost(Resource):
 		description=request.json["description"]
 		content=request.json["content"]
 		category=request.json["category"]
+
+		exists = blogposts.find_one({"title": title})
+
+		if exists:
+			return json.dumps({"message":'Title is a duplicate. Please Rename'})
+
 		aPost = { "title":title,"titleLink":titleLink, "author":author, "description":description,"content":content, 
 		"category":category, "dateCreated":'July 21, 2019'}
+
 		blogposts.insert_one(aPost)
 		return json.dumps(aPost, default=str), 200
 	
@@ -167,24 +193,44 @@ class blogpost(Resource):
 		return json.dumps(one_post, default = str)
 		# return json.dumps(titleLink, default = str)
 
-	@token_required
-	def put(current_user,self, post_id):
+	# @token_required
+	# def put(current_user,self):
+	def put(self):
+		titleLink = request.args['titleLink']
+		urlTitleLink = urllib.parse.quote_plus(titleLink)
 		# Verify post
-		one_post = blogposts.find_one({"post_id": post_id})
+		one_post = blogposts.find_one({"titleLink": urlTitleLink})
 		# IF post does not exist
 		if not one_post:
-			return "Post not found"
+			return json.dumps({"message":'Post not Found'}, default=str)
 
-	@token_required
-	def delete(current_user,self, post_id):
+		title=request.json['title']
+		titleLink=request.json['titleLink']
+		author=request.json["author"]
+		description=request.json["description"]
+		content=request.json["content"]
+		category=request.json["category"]
+		aPost = { "title":title,"titleLink":titleLink, "author":author, "description":description,"content":content, 
+		"category":category, "dateCreated":'July 21, 2019'}
+		blogposts.replace_one({"titleLink": urlTitleLink}, aPost)
+
+		return json.dumps(aPost, default=str), 200
+
+	# @token_required
+	# def delete(current_user,self):
+	def delete(self):
+		titleLink = request.args['titleLink']
+		urlTitleLink = urllib.parse.quote_plus(titleLink)
 		# Verify post
-		one_post = blogposts.find_one({"post_id": post_id})
+		one_post = blogposts.find_one({"titleLink": urlTitleLink})
 		# IF post does not exist
 		if not one_post:
-			return "Post not found"
+			return json.dumps({"message":'Post not Found'}, default=str)
+		
 		# Delete post
-		members.delete_one(one_post)
-		return "Post deleted"
+		blogposts.delete_one(one_post)
+
+		return json.dumps(one_post, default=str), 200
 
 
 class blogpostlist(Resource):

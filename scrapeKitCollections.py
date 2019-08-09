@@ -13,7 +13,13 @@ def getKits():
 	# get the html and the link
 	innerHTML = browser.execute_script("return document.body.innerHTML") #returns the inner HTML as a string
 
-	r = requests.get(innerHTML)
+	# r = requests.get(theUrl)
+
+	# driver = webdriver.PhantomJS()
+	# driver.get(my_url)
+	p_element = driver.find_element_by_id(id_='intro-text')
+	print(p_element.text)
+
 	page = r.text
 	#filter through tags
 	soup = bsoup(page, 'html.parser')
@@ -29,6 +35,6 @@ def getKits():
 
 
 
-	print(soup)
+	print(innerHTML)
 
 getKits()
