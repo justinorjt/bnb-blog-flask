@@ -4,8 +4,8 @@ from pymongo import MongoClient
 from passlib.hash import sha256_crypt
 from models import UserModel, BlogPost
 from functools import wraps
-import scrapeAirBnbNews, pymongo, json, uuid, jwt, datetime, urllib.parse
-
+import pymongo, json, uuid, jwt, datetime, urllib.parse
+import scrapeAirBnbNews,scrapeKitCollections, scrapeYoutube
 
 # DATABASE CONNECTION
 # client = pymongo.MongoClient("mongodb+srv://justin123:justin123@cluster0-tonis.mongodb.net/test")
@@ -44,6 +44,18 @@ class bnbnews(Resource):
 	def get(self):
 		news = scrapeAirBnbNews.getArticles()
 		return news
+
+# Retrieves Kit collections from Kit Account
+class kitcollections(Resource):
+	def get(self):
+		kits = scrapeKitCollections.getKits()
+		return kits
+
+# Retrieves Youtube Channel videos
+class youtube(Resource):
+	def get(self):
+		videos = scrapeYoutube.getVideos()
+		return videos
 
 # USERS
 # Handles user login
