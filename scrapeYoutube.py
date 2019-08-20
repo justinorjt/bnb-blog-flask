@@ -33,7 +33,7 @@ def getVideos():
 	for vid in videos:
 		link = (vid.get_attribute('href'))
 		code = link.split("=")[1]
-		vidLinks.append(code)
+		vidLinks.append({"video":code})
 
 	# print (vidLinks)
 	return (vidLinks)

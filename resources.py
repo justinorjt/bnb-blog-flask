@@ -6,6 +6,9 @@ from models import UserModel, BlogPost
 from functools import wraps
 import pymongo, json, uuid, jwt, datetime, urllib.parse
 import scrapeAirBnbNews,scrapeKitCollections, scrapeYoutube
+import schedule, time
+from multiprocessing import Process
+
 
 # DATABASE CONNECTION
 # client = pymongo.MongoClient("mongodb+srv://justin123:justin123@cluster0-tonis.mongodb.net/test")
@@ -14,6 +17,9 @@ client = pymongo.MongoClient("mongodb://justin123:justin123@cluster0-shard-00-00
 db = client.test
 blogposts = db.blogposts
 members = db.users
+tubeStore = db.youtube
+kitStore = db.kitcollections
+newsStore = db.bnbnews
 
 def token_required(f):
 	@wraps(f)
@@ -36,26 +42,54 @@ def token_required(f):
 
 	return decorated
 
+# SCRIPT STORAGE
+def storeBnbnews():
+	news = scrapeAirBnbNews.getArticles()
+	newsStore.remove({})
+	newsStore.insert(news)
+
+
+def storeKits():
+	kits = scrapeKitCollections.getKits()
+	kitStore.remove({})
+	kitStore.insert(kits)
+
+
+def storeYoutube():
+	videos = scrapeYoutube.getVideos()
+	tubeStore.remove({})
+	tubeStore.insert(videos)
+
+
+# SCHEDULED TASKS/JOBS
+schedule.every().hour.do(storeYoutube)
+schedule.every().hour.do(storeKits)
+schedule.every().hour.do(storeBnbnews)
+
 
 # API RESOURCE BEGINS
 
 # Retrieves scrapeAirBnbNews articles from google
 class bnbnews(Resource):
 	def get(self):
-		news = scrapeAirBnbNews.getArticles()
-		return news
+		allnews = []
+		[allnews.append(news) for news in newsStore.find()] 
+		return json.dumps(allnews, default=str)
 
 # Retrieves Kit collections from Kit Account
 class kitcollections(Resource):
 	def get(self):
-		kits = scrapeKitCollections.getKits()
-		return kits
+		allkits = []
+		[allkits.append(kit) for kit in kitStore.find()] 
+		return json.dumps(allkits, default=str)
 
 # Retrieves Youtube Channel videos
 class youtube(Resource):
 	def get(self):
-		videos = scrapeYoutube.getVideos()
-		return videos
+
+		allvids = []
+		[allvids.append(vid) for vid in tubeStore.find()] 
+		return json.dumps(allvids, default=str)
 
 # USERS
 # Handles user login
@@ -252,3 +286,7 @@ class blogpostlist(Resource):
 		[alist.append(doc) for doc in blogposts.find()] 
 		return json.dumps(alist, default = str)
 
+
+# while True:
+#     schedule.run_pending()
+    # time.sleep(1)

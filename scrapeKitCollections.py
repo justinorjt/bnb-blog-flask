@@ -18,7 +18,7 @@ def getKits():
 	# wait = browser.execute_script("window.scrollTo(0, document.body.scrollHeight);var lenOfPage=document.body.scrollHeight;return document.body.innerHTML;")
 	# time.sleep(.7)
 
-	WebDriverWait(browser, 2).until(
+	WebDriverWait(browser, 5).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, "collection-card"))
     )
 
@@ -28,7 +28,7 @@ def getKits():
 
 	for card in cards:
 		link = (card.get_attribute('href'))
-		kits.append(link)
+		kits.append({"link":link})
 
 	# print (kits)
 	return (kits)

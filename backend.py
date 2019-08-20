@@ -1,11 +1,12 @@
 from flask import Flask, request, render_template, jsonify, url_for, abort, session
 from flask_restful import Resource, Api, reqparse,abort
-from requests import put, get, post, delete
 from flask_cors import CORS
+from flask_apscheduler import APScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 from pymongo import MongoClient
 import uuid
 import resources
-
+from resources import storeBnbnews, storeYoutube, storeKits
 
 
 articles = {}
@@ -16,8 +17,14 @@ app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 api = Api(app)
 # cors = CORS(app, resources=r'/api/*')
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+scheduler = BackgroundScheduler()
+scheduler.start()
 
-# cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:1337/webpack-dev-server/"}}) 
+# SCHEDULED SCRIPT RUNS
+kitjob = scheduler.add_job(storeKits, 'interval', days=1)
+tubejob = scheduler.add_job(storeYoutube, 'interval', hours=12)
+newsjob = scheduler.add_job(storeBnbnews, 'interval', hours=3)
+
 
 @app.route('/')
 def index():
@@ -43,4 +50,4 @@ api.add_resource(resources.blogpost, '/api/blogpost/') # POST, GET, PUT, DELETE
 
 # if __name__ == '__main__':
 # app.environment = development
-app.run(debug=True)
+app.run(debug=True, threaded=True)
