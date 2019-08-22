@@ -6,20 +6,17 @@ from models import UserModel, BlogPost
 from functools import wraps
 import pymongo, json, uuid, jwt, datetime, urllib.parse
 import scrapeAirBnbNews,scrapeKitCollections, scrapeYoutube
-import schedule, time
-from multiprocessing import Process
-
 
 # DATABASE CONNECTION
 # client = pymongo.MongoClient("mongodb+srv://justin123:justin123@cluster0-tonis.mongodb.net/test")
 client = pymongo.MongoClient("mongodb://justin123:justin123@cluster0-shard-00-00-tonis.mongodb.net:27017,cluster0-shard-00-01-tonis.mongodb.net:27017,cluster0-shard-00-02-tonis.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority")
-# client = pymongo.MongoClient("mongodb+srv://justin123:zgZ9QTCQ8C!7sk-@cluster0-tonis.mongodb.net/test?retryWrites=true")
 db = client.test
 blogposts = db.blogposts
 members = db.users
 tubeStore = db.youtube
 kitStore = db.kitcollections
 newsStore = db.bnbnews
+comments = db.comments
 
 def token_required(f):
 	@wraps(f)
@@ -42,7 +39,7 @@ def token_required(f):
 
 	return decorated
 
-# SCRIPT STORAGE
+# SCRIPT STORAGE ######################################################################################################
 def storeBnbnews():
 	news = scrapeAirBnbNews.getArticles()
 	newsStore.remove({})
@@ -61,29 +58,23 @@ def storeYoutube():
 	tubeStore.insert(videos)
 
 
-# SCHEDULED TASKS/JOBS
-schedule.every().hour.do(storeYoutube)
-schedule.every().hour.do(storeKits)
-schedule.every().hour.do(storeBnbnews)
-
-
 # API RESOURCE BEGINS
 
-# Retrieves scrapeAirBnbNews articles from google
+# Retrieves scrapeAirBnbNews articles from google #######################################################################
 class bnbnews(Resource):
 	def get(self):
 		allnews = []
 		[allnews.append(news) for news in newsStore.find()] 
 		return json.dumps(allnews, default=str)
 
-# Retrieves Kit collections from Kit Account
+# Retrieves Kit collections from Kit Account ############################################################################
 class kitcollections(Resource):
 	def get(self):
 		allkits = []
 		[allkits.append(kit) for kit in kitStore.find()] 
 		return json.dumps(allkits, default=str)
 
-# Retrieves Youtube Channel videos
+# Retrieves Youtube Channel videos #######################################################################################
 class youtube(Resource):
 	def get(self):
 
@@ -92,7 +83,7 @@ class youtube(Resource):
 		return json.dumps(allvids, default=str)
 
 # USERS
-# Handles user login
+# HANDLES USER LOGIN ######################################################################################################
 class login(Resource):
 	def post(self):
 		email = request.json['email']
@@ -112,7 +103,7 @@ class login(Resource):
 	
 		# return json.dumps(user, default=str)
 
-
+# HANDLES USERS #############################################################################################################
 class user(Resource):
 	# User Sign Up
 	def post(self):
@@ -187,7 +178,7 @@ class user(Resource):
 
 
 
-# Get All Users
+# GET ALL USERS ########################################################################################################
 class allusers(Resource):
 	# @token_required
 	# def get(current_user ,self):
@@ -200,6 +191,7 @@ class allusers(Resource):
 		[allusers.append(user) for user in members.find()] 
 		return json.dumps({'users':allusers}, default = str)
 
+# HANDLES A SINGLE BLOGPOST #############################################################################################
 class blogpost(Resource):
 	# Create a blogpost
 	# @token_required
@@ -278,7 +270,7 @@ class blogpost(Resource):
 
 		return json.dumps(one_post, default=str), 200
 
-
+# HANDLES A LIST OF BLOGPOSTS ##########################################################################################
 class blogpostlist(Resource):
 	# Get all blogposts
 	def get(self):
@@ -286,7 +278,29 @@ class blogpostlist(Resource):
 		[alist.append(doc) for doc in blogposts.find()] 
 		return json.dumps(alist, default = str)
 
+# HANDLES A COMMENT #####################################################################################################
+class comment(Resource):
+	def post(self):
+		# If there is no request body
+		if not request.json:
+			abort(400)
 
-# while True:
-#     schedule.run_pending()
-    # time.sleep(1)
+		content=request.json['content']
+		user=request.json['user']
+		time_posted=request.json["time_posted"]
+		post_id=request.json["post_id"]
+		
+		
+		aComment = { "content":content, "user":user, "time_posted":time_posted, "post_id":post_id,}
+
+		comments.insert_one(aComment)
+		return json.dumps(aComment, default=str), 200
+
+# HANDLES A LIST OF COMMENTS ############################################################################################
+class commentlist(Resource):
+	# Get all blogposts
+	def get(self):
+		# titleLink = request.args['something to identify the post']
+		alist =[]
+		[alist.append(doc) for doc in comments.find()] 
+		return json.dumps(alist, default = str)

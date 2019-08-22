@@ -14,16 +14,18 @@ articles = {}
 # INIT APP
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+# INIT FLASK RESTFUL API
 api = Api(app)
-# cors = CORS(app, resources=r'/api/*')
+# INIT CORS RULES FOR API
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+# INIT BACKGROUND TASK SCHEDULER
 scheduler = BackgroundScheduler()
 scheduler.start()
 
 # SCHEDULED SCRIPT RUNS
 kitjob = scheduler.add_job(storeKits, 'interval', days=1)
-tubejob = scheduler.add_job(storeYoutube, 'interval', hours=12)
-newsjob = scheduler.add_job(storeBnbnews, 'interval', hours=3)
+tubejob = scheduler.add_job(storeYoutube, 'interval', hours=4)
+newsjob = scheduler.add_job(storeBnbnews, 'interval', hours=1)
 
 
 @app.route('/')
@@ -47,6 +49,7 @@ api.add_resource(resources.user, '/api/user', '/api/user/<user_id>') # POST, GET
 api.add_resource(resources.allusers, '/api/allusers') # GET
 api.add_resource(resources.blogpostlist, '/api/blogpostlist') # GET
 api.add_resource(resources.blogpost, '/api/blogpost/') # POST, GET, PUT, DELETE
+api.add_resource(resources.commentlist, '/api/commentlist') # GET
 
 # if __name__ == '__main__':
 # app.environment = development
