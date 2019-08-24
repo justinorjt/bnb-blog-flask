@@ -1,6 +1,7 @@
 from flask import Flask, request, abort, jsonify
 from flask_restful import Resource, Api, abort, reqparse
 from pymongo import MongoClient
+from bson.objectid import ObjectId
 from passlib.hash import sha256_crypt
 from models import UserModel, BlogPost
 from functools import wraps
@@ -176,8 +177,6 @@ class user(Resource):
 
 		return json.dumps({"user": one_member}, default = str)
 
-
-
 # GET ALL USERS ########################################################################################################
 class allusers(Resource):
 	# @token_required
@@ -283,24 +282,90 @@ class comment(Resource):
 	def post(self):
 		# If there is no request body
 		if not request.json:
-			abort(400)
+			return json.dumps({"message":'Not Valid post format'}, default=str)
 
 		content=request.json['content']
-		user=request.json['user']
+		user_id=request.json['user_id']
 		time_posted=request.json["time_posted"]
 		post_id=request.json["post_id"]
 		
 		
-		aComment = { "content":content, "user":user, "time_posted":time_posted, "post_id":post_id,}
+		aComment = { "content":content, "user_id":user_id, "time_posted":time_posted, "post_id":post_id}
 
 		comments.insert_one(aComment)
+		return json.dumps({"message":'Comment Posted!', "data": aComment}, default=str), 200
+
+	def get(self):
+		if not request.args:
+			return json.dumps({"message":'No request arguments'}, default=str)
+
+		comment_id = request.args['comment_id']
+		try:
+		# Verify comment
+			one_comment = comments.find_one(ObjectId(comment_id))
+		except Exception as e:
+			# If comment does not exist
+			return json.dumps({"message":'Comment not Found', "Error":e}, default=str)
+			
+		
+		return json.dumps(one_comment, default = str)
+
+
+	def put(self):
+		if not request.args:
+			return json.dumps({"message":'Not Valid request'}, default=str)
+
+		comment_id = request.args['comment_id']
+		try:
+		# Verify post
+			one_post = comments.find_one(ObjectId(comment_id))
+		except Exception as e:
+			# If Post does not exist
+			return json.dumps({"message":'Comment not Found', "Error":e}, default=str)
+			
+
+		content=request.json['content']
+		user_id=request.json['user_id']
+		time_posted=request.json["time_posted"]
+		post_id=request.json["post_id"]
+		
+		aComment = { "content":content, "user_id":user_id, "time_posted":time_posted, "post_id":post_id}
+
+		comments.replace_one(ObjectId(comment_id), aComment)
+
+		return json.dumps(aComment, default=str), 200
+		
+
+	def delete(self):
+		if not request.args:
+			return json.dumps({"message":'Not Valid request'}, default=str)
+
+		comment_id = request.args['comment_id']
+		try:
+		# Verify post
+			aComment = comments.find_one(ObjectId(comment_id))
+		except Exception as e:
+			# If Post does not exist
+			return json.dumps({"message":'Comment not Found', "Error":e}, default=str)
+			
+		# Delete post
+		comments.delete_one(aComment)
 		return json.dumps(aComment, default=str), 200
 
+		
 # HANDLES A LIST OF COMMENTS ############################################################################################
 class commentlist(Resource):
 	# Get all blogposts
 	def get(self):
-		# titleLink = request.args['something to identify the post']
-		alist =[]
-		[alist.append(doc) for doc in comments.find()] 
-		return json.dumps(alist, default = str)
+		listofcomments =[]
+
+		if not request.args:
+			[listofcomments.append(doc) for doc in comments.find()] 
+		else:
+			post_id = request.args['post_id']
+
+			[listofcomments.append(doc) for doc in comments.find({"post_id": post_id})] 
+			if listofcomments == []:
+				return json.dumps({"message":'No Comments match this post ID'}, default=str)
+			
+		return json.dumps(listofcomments, default = str)
