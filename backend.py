@@ -45,7 +45,7 @@ api.add_resource(resources.kitcollections, '/api/kitcollections') #GET
 api.add_resource(resources.youtube, '/api/youtube') #GET
 api.add_resource(resources.login, '/api/login') # POST
 # api.add_resource(resources.user, '/api/user') # POST, GET, PUT, DELETE
-api.add_resource(resources.user, '/api/user', '/api/user/<user_id>') # POST, GET, PUT, DELETE
+api.add_resource(resources.user, '/api/user/') # POST, GET, PUT, DELETE
 api.add_resource(resources.allusers, '/api/allusers') # GET
 api.add_resource(resources.blogpostlist, '/api/blogpostlist') # GET
 api.add_resource(resources.blogpost, '/api/blogpost/') # POST, GET, PUT, DELETE

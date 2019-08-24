@@ -140,10 +140,15 @@ class user(Resource):
 	def get(self):
 		# Get one user
 		user_id = request.args['user_id']
-		one_member = members.find_one({"user_id": user_id})
-
-		if not one_member:
-			return json.dumps({"message": "User does not exist" })
+		try:
+			# Verify comment
+			one_member = members.find_one(ObjectId(user_id))
+		except Exception as e:
+			# If comment does not exist
+			return json.dumps({"message":'Member not Found', "Error":e}, default=str)
+			
+		# if not one_member:
+		# 	return json.dumps({"message": "User does not exist" })
 
 		return json.dumps({"user" : one_member}, default = str)
 
@@ -153,7 +158,7 @@ class user(Resource):
 	def delete(self):
 		# Get one user
 		user_id = request.args['user_id']
-		one_member = members.find_one({"user_id": user_id})
+		one_member = members.find_one(ObjectId(user_id))
 
 		if not one_member:
 			return json.dumps({"message": "User does not exist" })
@@ -167,7 +172,7 @@ class user(Resource):
 	def put(self):
 		# Get one user
 		user_id = request.args['user_id']
-		one_member = members.find_one({"user_id": user_id})
+		one_member = members.find_one(ObjectId(user_id))
 
 		if not one_member:
 			return json.dumps({"message": "User does not exist" })
