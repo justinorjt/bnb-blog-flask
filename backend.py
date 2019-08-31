@@ -1,10 +1,7 @@
-from flask import Flask, request, render_template, jsonify, url_for, abort, session
-from flask_restful import Resource, Api, reqparse,abort
+from flask import Flask, render_template
+from flask_restful import Api
 from flask_cors import CORS
-from flask_apscheduler import APScheduler
 from apscheduler.schedulers.background import BackgroundScheduler
-from pymongo import MongoClient
-import uuid
 import resources
 from resources import storeBnbnews, storeYoutube, storeKits
 
@@ -24,7 +21,7 @@ scheduler.start()
 
 # SCHEDULED SCRIPT RUNS
 kitjob = scheduler.add_job(storeKits, 'interval', days=1)
-tubejob = scheduler.add_job(storeYoutube, 'interval', hours=4)
+tubejob = scheduler.add_job(storeYoutube, 'interval', hours=1)
 newsjob = scheduler.add_job(storeBnbnews, 'interval', hours=1)
 
 

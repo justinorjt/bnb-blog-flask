@@ -1,5 +1,5 @@
-from flask import Flask, request, abort, jsonify
-from flask_restful import Resource, Api, abort, reqparse
+from flask import request, abort
+from flask_restful import Resource, reqparse
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from passlib.hash import sha256_crypt
