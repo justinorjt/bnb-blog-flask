@@ -50,6 +50,5 @@ api.add_resource(resources.commentlist, '/api/commentlist/') # GET
 api.add_resource(resources.comment, '/api/comment/') # POST, GET, PUT, DELETE
 
 
-# if __name__ == '__main__':
-# app.environment = development
-app.run(debug=True, threaded=True)
+if __name__ == '__main__':
+	app.run(debug=True, threaded=True)

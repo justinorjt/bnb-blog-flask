@@ -1,12 +1,13 @@
 from flask import request, abort
 from flask_restful import Resource, reqparse
-from pymongo import MongoClient
+import pymongo
 from bson.objectid import ObjectId
 from passlib.hash import sha256_crypt
-from models import UserModel, BlogPost
+# from models import UserModel, BlogPost
 from functools import wraps
-import pymongo, json, uuid, jwt, datetime, urllib.parse
+import json, uuid, jwt, datetime, urllib.parse
 import scrapeAirBnbNews,scrapeKitCollections, scrapeYoutube
+# from pymongo import MongoClient
 
 # DATABASE CONNECTION
 # client = pymongo.MongoClient("mongodb+srv://justin123:justin123@cluster0-tonis.mongodb.net/test")
