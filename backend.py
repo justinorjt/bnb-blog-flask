@@ -27,13 +27,14 @@ newsjob = scheduler.add_job(storeBnbnews, 'interval', hours=1)
 
 @app.route('/')
 def index():
-	return render_template('index.html')
+	return "<h1>AirBNB Automated Server</h1>"
+	# return render_template('index.html')
 
 # ROUTING/REDIRECTING ALL FLASK ROUTES TO INDEX.HTML WHERE ANGULAR ROUTES ARE SERVED
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def catch_all(path):
-	return render_template('index.html')
+# @app.route('/', defaults={'path': ''})
+# @app.route('/<path:path>')
+# def catch_all(path):
+# 	return render_template('index.html')
 
 
 # API ENDPOINTS 
@@ -50,5 +51,5 @@ api.add_resource(resources.commentlist, '/api/commentlist/') # GET
 api.add_resource(resources.comment, '/api/comment/') # POST, GET, PUT, DELETE
 
 
-# if __name__ == '__main__':
-# 	app.run(debug=True, threaded=True)
+if __name__ == '__main__':
+	app.run(debug=True, threaded=True)
