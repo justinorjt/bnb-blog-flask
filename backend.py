@@ -8,6 +8,8 @@ from resources import storeBnbnews, storeYoutube, storeKits
 
 articles = {}
 
+
+
 # INIT APP
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
@@ -21,13 +23,17 @@ scheduler.start()
 
 # SCHEDULED SCRIPT RUNS
 kitjob = scheduler.add_job(storeKits, 'interval', days=1)
-tubejob = scheduler.add_job(storeYoutube, 'interval', hours=1)
+tubejob = scheduler.add_job(storeYoutube, 'interval', hours=3)
 newsjob = scheduler.add_job(storeBnbnews, 'interval', hours=1)
+
+def all_scripts():
+	return storeYoutube(), storeBnbnews(), storeKits()
 
 
 @app.route('/')
 def index():
-	return "<h1>AirBNB Automated Server</h1>"
+	return "<h1>AirBNB Automated Server</h1>", all_scripts()
+	# print(scheduler.get_jobs())
 	# return render_template('index.html')
 
 # ROUTING/REDIRECTING ALL FLASK ROUTES TO INDEX.HTML WHERE ANGULAR ROUTES ARE SERVED

@@ -290,13 +290,13 @@ class comment(Resource):
 		if not request.json:
 			return json.dumps({"message":'Not Valid post format'}, default=str)
 
-		content=request.json['content']
-		user_id=request.json['user_id']
-		time_posted=request.json["time_posted"]
-		post_id=request.json["post_id"]
+		content=request.json.get('content')
+		user_email=request.json.get('user_email')
+		time_posted=request.json.get("time_posted")
+		post_id=request.json.get("post_id")
 		
 		
-		aComment = { "content":content, "user_id":user_id, "time_posted":time_posted, "post_id":post_id}
+		aComment = { "content":content, "user_email":user_email, "time_posted":time_posted, "post_id":post_id}
 
 		comments.insert_one(aComment)
 		return json.dumps({"message":'Comment Posted!', "data": aComment}, default=str), 200
@@ -331,11 +331,11 @@ class comment(Resource):
 			
 
 		content=request.json['content']
-		user_id=request.json['user_id']
+		user_email=request.json['user_email']
 		time_posted=request.json["time_posted"]
 		post_id=request.json["post_id"]
 		
-		aComment = { "content":content, "user_id":user_id, "time_posted":time_posted, "post_id":post_id}
+		aComment = { "content":content, "user_email":user_email, "time_posted":time_posted, "post_id":post_id}
 
 		comments.replace_one(ObjectId(comment_id), aComment)
 
