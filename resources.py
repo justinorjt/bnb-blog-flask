@@ -29,17 +29,20 @@ def token_required(f):
 			token = request.headers['x-access-token']
 
 		if not token:
-			return json.dumps({"message": "Token is Missing"})
+			return makeJson({"message": "Token is Missing"})
 
 		try:
 			data = jwt.decode(token, 'crazy')
 			current_user = members.find_one({ "user_id" : data['user_id'] })
 		except Exception as e:
-			return json.dumps({"message": "Token is Invalid"})
+			return makeJson({"message": "Token is Invalid"})
 		
 		return f(current_user, *args, **kwargs)
 
 	return decorated
+
+def makeJson(stuff):
+	return json.loads(json.dumps(stuff, default=str))
 
 # SCRIPT STORAGE ######################################################################################################
 def storeBnbnews():
@@ -67,14 +70,14 @@ class bnbnews(Resource):
 	def get(self):
 		allnews = []
 		[allnews.append(news) for news in newsStore.find()] 
-		return json.dumps(allnews, default=str)
+		return makeJson(allnews)
 
 # Retrieves Kit collections from Kit Account ############################################################################
 class kitcollections(Resource):
 	def get(self):
 		allkits = []
 		[allkits.append(kit) for kit in kitStore.find()] 
-		return json.dumps(allkits, default=str)
+		return makeJson(allkits)
 
 # Retrieves Youtube Channel videos #######################################################################################
 class youtube(Resource):
@@ -82,7 +85,7 @@ class youtube(Resource):
 
 		allvids = []
 		[allvids.append(vid) for vid in tubeStore.find()] 
-		return json.dumps(allvids, default=str)
+		return makeJson(allvids)
 
 # USERS
 # HANDLES USER LOGIN ######################################################################################################
@@ -94,16 +97,16 @@ class login(Resource):
 		user = members.find_one({ "email" : email })
 
 		if not user:
-			return json.dumps({"message":'Invalid Credentials'}, default=str)
+			return makeJson({"message":'Invalid Credentials'})
 		if not sha256_crypt.verify(password, user['password']):
-			return json.dumps({"message":'Error: Wrong password'}, default=str)
+			return makeJson({"message":'Error: Wrong password'})
 
 		token = jwt.encode({"user_id": user['user_id'], "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=20)}, 'crazy')
 
-		return json.dumps({'token': token.decode('UTF-8')})
+		return makeJson({'token': token.decode('UTF-8')})
 
 	
-		# return json.dumps(user, default=str)
+		# return makeJson(user)
 
 # HANDLES USERS #############################################################################################################
 class user(Resource):
@@ -124,7 +127,7 @@ class user(Resource):
 		user = members.find_one({ "email" : email })
 
 		if user:
-			return json.dumps({"message":'User email already exists. Please Login'})
+			return makeJson({"message":'User email already exists. Please Login'})
 
 		userObject = {
 		"email":email, "firstname":firstname, "lastname":lastname, "phone":phone,  
@@ -133,7 +136,7 @@ class user(Resource):
 		
 		user = members.insert_one(userObject)
 
-		return json.dumps(userObject, default=str)
+		return makeJson(userObject)
 
 	# Get User By Id
 	# @token_required
@@ -146,12 +149,12 @@ class user(Resource):
 			one_member = members.find_one(ObjectId(user_id))
 		except Exception as e:
 			# If comment does not exist
-			return json.dumps({"message":'Member not Found', "Error":e}, default=str)
+			return makeJson({"message":'Member not Found', "Error":e})
 			
 		# if not one_member:
-		# 	return json.dumps({"message": "User does not exist" })
+		# 	return makeJson({"message": "User does not exist" })
 
-		return json.dumps({"user" : one_member}, default = str)
+		return makeJson({"user" : one_member})
 
 	# Delete a User
 	# @token_required
@@ -162,7 +165,7 @@ class user(Resource):
 		one_member = members.find_one(ObjectId(user_id))
 
 		if not one_member:
-			return json.dumps({"message": "User does not exist" })
+			return makeJson({"message": "User does not exist" })
 
 		members.delete_one(one_member)
 		return "User deleted"
@@ -176,12 +179,12 @@ class user(Resource):
 		one_member = members.find_one(ObjectId(user_id))
 
 		if not one_member:
-			return json.dumps({"message": "User does not exist" })
+			return makeJson({"message": "User does not exist" })
 
 		one_member['role'] = "Admin"
 		members.save(one_member)
 
-		return json.dumps({"user": one_member}, default = str)
+		return makeJson({"user": one_member})
 
 # GET ALL USERS ########################################################################################################
 class allusers(Resource):
@@ -190,11 +193,11 @@ class allusers(Resource):
 	def get(self):
 
 		# if current_user['role'] != 'Admin':
-		# 	return json.dumps({"message": "Need Admin to access this route"})
+		# 	return makeJson({"message": "Need Admin to access this route"})
 
 		allusers = []
 		[allusers.append(user) for user in members.find()] 
-		return json.dumps({'users':allusers}, default = str)
+		return makeJson({'users':allusers})
 
 # HANDLES A SINGLE BLOGPOST #############################################################################################
 class blogpost(Resource):
@@ -216,13 +219,13 @@ class blogpost(Resource):
 		exists = blogposts.find_one({"title": title})
 
 		if exists:
-			return json.dumps({"message":'Title is a duplicate. Please Rename'})
+			return makeJson({"message":'Title is a duplicate. Please Rename'})
 
 		aPost = { "title":title,"titleLink":titleLink, "author":author, "description":description,"content":content, 
 		"category":category, "dateCreated":'July 21, 2019'}
 
 		blogposts.insert_one(aPost)
-		return json.dumps(aPost, default=str), 200
+		return makeJson(aPost), 200
 	
 	def get(self):
 		titleLink = request.args['titleLink']
@@ -231,10 +234,10 @@ class blogpost(Resource):
 		one_post = blogposts.find_one({"titleLink": urlTitleLink})
 		# IF post does not exist
 		if not one_post:
-			return json.dumps({"message":'Post not Found'}, default=str)
+			return makeJson({"message":'Post not Found'})
 
-		return json.dumps(one_post, default = str)
-		# return json.dumps(titleLink, default = str)
+		return makeJson(one_post)
+		# return makeJson(titleLink)
 
 	# @token_required
 	# def put(current_user,self):
@@ -245,7 +248,7 @@ class blogpost(Resource):
 		one_post = blogposts.find_one({"titleLink": urlTitleLink})
 		# IF post does not exist
 		if not one_post:
-			return json.dumps({"message":'Post not Found'}, default=str)
+			return makeJson({"message":'Post not Found'})
 
 		title=request.json['title']
 		titleLink=request.json['titleLink']
@@ -257,7 +260,7 @@ class blogpost(Resource):
 		"category":category, "dateCreated":'July 21, 2019'}
 		blogposts.replace_one({"titleLink": urlTitleLink}, aPost)
 
-		return json.dumps(aPost, default=str), 200
+		return makeJson(aPost), 200
 
 	# @token_required
 	# def delete(current_user,self):
@@ -268,12 +271,12 @@ class blogpost(Resource):
 		one_post = blogposts.find_one({"titleLink": urlTitleLink})
 		# IF post does not exist
 		if not one_post:
-			return json.dumps({"message":'Post not Found'}, default=str)
+			return makeJson({"message":'Post not Found'})
 		
 		# Delete post
 		blogposts.delete_one(one_post)
 
-		return json.dumps(one_post, default=str), 200
+		return makeJson(one_post), 200
 
 # HANDLES A LIST OF BLOGPOSTS ##########################################################################################
 class blogpostlist(Resource):
@@ -281,29 +284,32 @@ class blogpostlist(Resource):
 	def get(self):
 		alist =[]
 		[alist.append(doc) for doc in blogposts.find()] 
-		return json.dumps(alist, default = str)
+		return makeJson(alist)
 
 # HANDLES A COMMENT #####################################################################################################
 class comment(Resource):
 	def post(self):
 		# If there is no request body
 		if not request.json:
-			return json.dumps({"message":'Not Valid post format'}, default=str)
+			return makeJson({"message":'Not Valid post format'})
+		try:
+			content=request.json.get('content')
+			user_email=request.json.get('user_email')
+			time_posted=request.json.get("time_posted")
+			post_id=request.json.get("post_id")
+			
+			
+			aComment = { "content":content, "user_email":user_email, "time_posted":time_posted, "post_id":post_id}
 
-		content=request.json.get('content')
-		user_email=request.json.get('user_email')
-		time_posted=request.json.get("time_posted")
-		post_id=request.json.get("post_id")
-		
-		
-		aComment = { "content":content, "user_email":user_email, "time_posted":time_posted, "post_id":post_id}
+			comments.insert_one(aComment)
+			return makeJson(aComment), 200
 
-		comments.insert_one(aComment)
-		return json.dumps({"message":'Comment Posted!', "data": aComment}, default=str), 200
+		except Exception as e:
+			return makeJson({"message":"Error -> " + str(e)}) 
 
 	def get(self):
 		if not request.args:
-			return json.dumps({"message":'No request arguments'}, default=str)
+			return makeJson({"message":'No request arguments'})
 
 		comment_id = request.args['comment_id']
 		try:
@@ -311,40 +317,42 @@ class comment(Resource):
 			one_comment = comments.find_one(ObjectId(comment_id))
 		except Exception as e:
 			# If comment does not exist
-			return json.dumps({"message":'Comment not Found', "Error":e}, default=str)
+			return makeJson({"message":"Error -> "+ str(e)})
 			
 		
-		return json.dumps(one_comment, default = str)
+		return makeJson(one_comment)
 
 
 	def put(self):
 		if not request.args:
-			return json.dumps({"message":'Not Valid request'}, default=str)
+			return makeJson({"message":'Not arguments sent'})
 
-		comment_id = request.args['comment_id']
 		try:
-		# Verify post
-			one_post = comments.find_one(ObjectId(comment_id))
-		except Exception as e:
-			# If Post does not exist
-			return json.dumps({"message":'Comment not Found', "Error":e}, default=str)
+			# VERIFY POST
+			# comment_id = request.args['post_id']
+			comment_id = request.args['comment_id']
+			one_comment = comments.find_one(ObjectId(comment_id))	
+
+			if not one_comment:
+				return makeJson({"message":"Comment you're trying to edit does not exist"})
+
+
+			content=request.json.get('content')
+			user_email=request.json.get('user_email')
+			time_posted=request.json.get('time_posted')
+			post_id=request.json.get('post_id')
 			
+			aComment = { "content":content, "user_email":user_email, "time_posted":time_posted, "post_id":post_id}
 
-		content=request.json['content']
-		user_email=request.json['user_email']
-		time_posted=request.json["time_posted"]
-		post_id=request.json["post_id"]
-		
-		aComment = { "content":content, "user_email":user_email, "time_posted":time_posted, "post_id":post_id}
+			comments.replace_one({"_id":ObjectId(comment_id)}, aComment)
 
-		comments.replace_one(ObjectId(comment_id), aComment)
-
-		return json.dumps(aComment, default=str), 200
-		
+			return makeJson(aComment), 200
+		except Exception as e:
+			return makeJson({"message":"Error -> " +str(e)})
 
 	def delete(self):
 		if not request.args:
-			return json.dumps({"message":'Not Valid request'}, default=str)
+			return makeJson({"message":'Not Valid request'})
 
 		comment_id = request.args['comment_id']
 		try:
@@ -352,12 +360,11 @@ class comment(Resource):
 			aComment = comments.find_one(ObjectId(comment_id))
 		except Exception as e:
 			# If Post does not exist
-			return json.dumps({"message":'Comment not Found', "Error":e}, default=str)
+			return makeJson({"message":'Comment not Found', "Error":e})
 			
 		# Delete post
 		comments.delete_one(aComment)
-		return json.dumps(aComment, default=str), 200
-
+		return makeJson(aComment), 200
 		
 # HANDLES A LIST OF COMMENTS ############################################################################################
 class commentlist(Resource):
@@ -372,6 +379,6 @@ class commentlist(Resource):
 
 			[listofcomments.append(doc) for doc in comments.find({"post_id": post_id})] 
 			if listofcomments == []:
-				return json.dumps({"message":'No Comments match this post ID'}, default=str)
+				return makeJson({"message":'No Comments match this post ID'})
 			
-		return json.dumps(listofcomments, default = str)
+		return makeJson(listofcomments)
