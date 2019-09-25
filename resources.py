@@ -314,13 +314,14 @@ class comment(Resource):
 		comment_id = request.args['comment_id']
 		try:
 		# Verify comment
-			one_comment = comments.find_one(ObjectId(comment_id))
+			one_comment = comments.find_one({"_id":ObjectId(comment_id)})
+			return makeJson(one_comment)
+
 		except Exception as e:
 			# If comment does not exist
 			return makeJson({"message":"Error -> "+ str(e)})
 			
 		
-		return makeJson(one_comment)
 
 
 	def put(self):
