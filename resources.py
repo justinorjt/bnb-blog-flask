@@ -3,9 +3,8 @@ from flask_restful import Resource, reqparse
 import pymongo
 from bson.objectid import ObjectId
 from passlib.hash import sha256_crypt
-# from models import UserModel, BlogPost
 from functools import wraps
-import json, uuid, jwt, datetime, urllib.parse
+import json, uuid, jwt, datetime, urllib.parse, time
 import scrapeAirBnbNews,scrapeKitCollections, scrapeYoutube
 # from pymongo import MongoClient
 
@@ -50,12 +49,10 @@ def storeBnbnews():
 	newsStore.remove({})
 	newsStore.insert(news)
 
-
 def storeKits():
 	kits = scrapeKitCollections.getKits()
 	kitStore.remove({})
 	kitStore.insert(kits)
-
 
 def storeYoutube():
 	videos = scrapeYoutube.getVideos()
@@ -209,12 +206,14 @@ class blogpost(Resource):
 		if not request.json:
 			abort(400)
 
-		title=request.json['title']
-		titleLink=request.json['titleLink']
-		author=request.json["author"]
-		description=request.json["description"]
-		content=request.json["content"]
-		category=request.json["category"]
+		# aPost = {}
+
+		title=request.json.get('title').lower()
+		titleLink=request.json.get('titleLink')
+		author=request.json.get("author")
+		description=request.json.get("description")
+		content=request.json.get("content")
+		category=request.json.get("category")
 
 		exists = blogposts.find_one({"title": title})
 
@@ -222,53 +221,51 @@ class blogpost(Resource):
 			return makeJson({"message":'Title is a duplicate. Please Rename'})
 
 		aPost = { "title":title,"titleLink":titleLink, "author":author, "description":description,"content":content, 
-		"category":category, "dateCreated":'July 21, 2019'}
+		"category":category, "dateCreated":time.time()}
 
 		blogposts.insert_one(aPost)
 		return makeJson(aPost), 200
 	
 	def get(self):
-		titleLink = request.args['titleLink']
-		urlTitleLink = urllib.parse.quote_plus(titleLink)
+		post_id = request.args.get('id')
 		# Verify post
-		one_post = blogposts.find_one({"titleLink": urlTitleLink})
+		one_post = blogposts.find_one({"_id": ObjectId(post_id)})
 		# IF post does not exist
 		if not one_post:
 			return makeJson({"message":'Post not Found'})
 
 		return makeJson(one_post)
-		# return makeJson(titleLink)
 
 	# @token_required
 	# def put(current_user,self):
 	def put(self):
-		titleLink = request.args['titleLink']
-		urlTitleLink = urllib.parse.quote_plus(titleLink)
+		post_id = request.args.get('id')
 		# Verify post
-		one_post = blogposts.find_one({"titleLink": urlTitleLink})
+		one_post = blogposts.find_one({"_id": ObjectId(post_id)})
 		# IF post does not exist
 		if not one_post:
 			return makeJson({"message":'Post not Found'})
 
-		title=request.json['title']
-		titleLink=request.json['titleLink']
-		author=request.json["author"]
-		description=request.json["description"]
-		content=request.json["content"]
-		category=request.json["category"]
+		title=request.json.get('title')
+		titleLink=request.json.get('titleLink')
+		author=request.json.get("author")
+		description=request.json.get("description")
+		content=request.json.get("content")
+		category=request.json.get("category")
+
 		aPost = { "title":title,"titleLink":titleLink, "author":author, "description":description,"content":content, 
-		"category":category, "dateCreated":'July 21, 2019'}
-		blogposts.replace_one({"titleLink": urlTitleLink}, aPost)
+		"category":category, "dateCreated": makeJson(one_post).get("dateCreated")}
+
+		blogposts.replace_one({"_id": ObjectId(post_id)}, aPost)
 
 		return makeJson(aPost), 200
 
 	# @token_required
 	# def delete(current_user,self):
 	def delete(self):
-		titleLink = request.args['titleLink']
-		urlTitleLink = urllib.parse.quote_plus(titleLink)
+		post_id = request.args.get('id')
 		# Verify post
-		one_post = blogposts.find_one({"titleLink": urlTitleLink})
+		one_post = blogposts.find_one({"_id": ObjectId(post_id)})
 		# IF post does not exist
 		if not one_post:
 			return makeJson({"message":'Post not Found'})

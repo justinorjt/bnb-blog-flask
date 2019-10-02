@@ -52,7 +52,7 @@ api.add_resource(resources.login, '/api/login') # POST
 api.add_resource(resources.user, '/api/user/') # POST, GET, PUT, DELETE
 api.add_resource(resources.allusers, '/api/allusers') # GET
 api.add_resource(resources.blogpostlist, '/api/blogpostlist') # GET
-api.add_resource(resources.blogpost, '/api/blogpost/') # POST, GET, PUT, DELETE
+api.add_resource(resources.blogpost, '/api/blogpost') # POST, GET, PUT, DELETE
 api.add_resource(resources.commentlist, '/api/commentlist/') # GET
 api.add_resource(resources.comment, '/api/comment') # POST, GET, PUT, DELETE
 
