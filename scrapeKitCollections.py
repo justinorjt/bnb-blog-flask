@@ -1,4 +1,6 @@
 # Pull in Kit Collections
+from bs4 import BeautifulSoup as bsoup
+from html.parser import HTMLParser
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -12,27 +14,32 @@ def getKits():
 	browser = webdriver.Chrome(options=config) 
 
 	
-	theUrl = 'https://kit.com/rakidzich'
+	theUrl = 'https://kit.co/rakidzich'
 	browser.get(theUrl) 	
 	# get the html and the link
 	# wait = browser.execute_script("window.scrollTo(0, document.body.scrollHeight);var lenOfPage=document.body.scrollHeight;return document.body.innerHTML;")
 	# time.sleep(.7)
+	try:
 
-	WebDriverWait(browser, 5).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, "collection-card"))
-    )
+		WebDriverWait(browser, 5).until(
+	        EC.presence_of_element_located((By.CSS_SELECTOR, "collection-card"))
+	    )
+		page = browser.page_source
 
-	cards = browser.find_elements_by_class_name('collection-card')
+	finally:
+		browser.quit()
+
+	soup = bsoup(page, 'html.parser')
+	cards = soup.find_all('a', attrs={'class':'collection-card'})
 	
 	kits = []
 
 	for card in cards:
-		link = (card.get_attribute('href'))
+		link = card.get('href')
 		kits.append({"link":link})
 
 	# print (kits)
-	return (kits)
-	browser.quit()
+	return kits
 
 
 # getKits()

@@ -1,6 +1,4 @@
 # from . import db
-# from mongoengine import *
-# from datetime import timedelta
 
 # class UserModel(object):
 # 	def __init__(self, email, password, user_id):

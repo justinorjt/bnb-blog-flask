@@ -6,10 +6,6 @@ import resources
 from resources import storeBnbnews, storeYoutube, storeKits
 
 
-articles = {}
-
-
-
 # INIT APP
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
@@ -26,13 +22,16 @@ kitjob = scheduler.add_job(storeKits, 'interval', days=1)
 tubejob = scheduler.add_job(storeYoutube, 'interval', hours=3)
 newsjob = scheduler.add_job(storeBnbnews, 'interval', hours=1)
 
-def all_scripts():
-	return storeYoutube(), storeBnbnews(), storeKits()
+# def all_scripts():
+# 	return storeYoutube(), storeBnbnews(), storeKits()
 
 
 @app.route('/')
 def index():
-	return "<h1>AirBNB Automated Server</h1>", all_scripts()
+	# storeKits()
+	# storeYoutube()
+	# storeBnbnews()
+	return "<h1>AirBNB Automated Server</h1>"
 	# print(scheduler.get_jobs())
 	# return render_template('index.html')
 
@@ -48,14 +47,8 @@ api.add_resource(resources.bnbnews, '/api/bnbnews') #GET
 api.add_resource(resources.kitcollections, '/api/kitcollections') #GET
 api.add_resource(resources.youtube, '/api/youtube') #GET
 api.add_resource(resources.login, '/api/login') # POST
-# api.add_resource(resources.user, '/api/user') # POST, GET, PUT, DELETE
-api.add_resource(resources.user, '/api/user/') # POST, GET, PUT, DELETE
-api.add_resource(resources.allusers, '/api/allusers') # GET
-api.add_resource(resources.blogpostlist, '/api/blogpostlist') # GET
+api.add_resource(resources.user, '/api/user') # POST, GET, PUT, DELETE
 api.add_resource(resources.blogpost, '/api/blogpost') # POST, GET, PUT, DELETE
-api.add_resource(resources.commentlist, '/api/commentlist/') # GET
 api.add_resource(resources.comment, '/api/comment') # POST, GET, PUT, DELETE
 
 
-if __name__ == '__main__':
-	app.run(debug=True, threaded=True)
