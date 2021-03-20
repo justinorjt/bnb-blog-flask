@@ -6,7 +6,7 @@ bs4==0.0.1
 bson==0.5.8
 cffi==1.12.3
 Click==7.0
-cryptography==2.7
+cryptography==3.2
 Flask==1.1.1
 Flask-Cors==3.0.8
 Flask-RESTful==0.3.7
